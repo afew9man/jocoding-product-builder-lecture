@@ -1,3 +1,5 @@
+console.log('Lotto script starting...');
+
 class LottoBall extends HTMLElement {
     constructor() {
         super();
@@ -20,23 +22,27 @@ class LottoBall extends HTMLElement {
 
     render() {
         const shadow = this.shadowRoot;
-        shadow.innerHTML = '';
-        const wrapper = document.createElement('div');
         const number = this.getAttribute('number');
-        const color = this.getColor(number);
-        wrapper.style.backgroundColor = color;
-        wrapper.style.width = '100%';
-        wrapper.style.height = '100%';
-        wrapper.style.borderRadius = '50%';
-        wrapper.style.display = 'flex';
-        wrapper.style.justifyContent = 'center';
-        wrapper.style.alignItems = 'center';
-        wrapper.style.fontSize = '24px';
-        wrapper.style.fontWeight = 'bold';
-        wrapper.style.color = 'white';
-        wrapper.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-        wrapper.textContent = number;
-        shadow.appendChild(wrapper);
+        if (number === null) return;
+
+        shadow.innerHTML = `
+            <style>
+                div {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    background-color: ${this.getColor(number)};
+                }
+            </style>
+            <div>${number}</div>
+        `;
     }
 
     getColor(number) {
@@ -52,18 +58,34 @@ class LottoBall extends HTMLElement {
 // Define the custom element only if it's not already defined.
 if (!customElements.get('lotto-ball')) {
   customElements.define('lotto-ball', LottoBall);
+  console.log('lotto-ball custom element defined');
 }
 
-document.getElementById('generate-btn').addEventListener('click', () => {
-    const lottoNumbersContainer = document.getElementById('lotto-numbers');
-    lottoNumbersContainer.innerHTML = '';
-    const numbers = new Set();
-    while (numbers.size < 6) {
-        numbers.add(Math.floor(Math.random() * 45) + 1);
-    }
-    numbers.forEach(number => {
-        const lottoBall = document.createElement('lotto-ball');
-        lottoBall.setAttribute('number', number);
-        lottoNumbersContainer.appendChild(lottoBall);
+const generateBtn = document.getElementById('generate-btn');
+if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+        console.log('Generate button clicked');
+        const lottoNumbersContainer = document.getElementById('lotto-numbers');
+        if (!lottoNumbersContainer) {
+            console.error('lotto-numbers container not found!');
+            return;
+        }
+        lottoNumbersContainer.innerHTML = '';
+        const numbers = new Set();
+        while (numbers.size < 6) {
+            numbers.add(Math.floor(Math.random() * 45) + 1);
+        }
+        
+        // Convert Set to array and sort numbers for better UX
+        const sortedNumbers = Array.from(numbers).sort((a, b) => a - b);
+        console.log('Generated numbers:', sortedNumbers);
+
+        sortedNumbers.forEach(number => {
+            const lottoBall = document.createElement('lotto-ball');
+            lottoBall.setAttribute('number', number);
+            lottoNumbersContainer.appendChild(lottoBall);
+        });
     });
-});
+} else {
+    console.error('generate-btn not found!');
+}
